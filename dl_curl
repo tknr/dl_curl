@@ -6,12 +6,11 @@ CMDNAME=`basename $0`
 
 
 FILENAME_QUEUE="queue_curl.txt"
-COMMAND="time curl"
-WRITE_OUT_FORMAT="status: %{http_code}, time: %{time_total}\n"
-LOAD_COOKIE_PATH="/dev/null"
+COMMAND="time nice -n 19 curl -k -L -i"
+LOAD_COOKIE_PATH=/dev/null
 
 usage_exit() {
-        echo "Usage: ${CMDNAME} [-w write out format] [-c cookie txt path] [-q queue_filename]" 1>&2
+        echo "Usage: ${CMDNAME} [-c cookie txt path] [-q queue_filename]" 1>&2
         exit 1
 }
 
@@ -20,7 +19,6 @@ source ~/.config/dl_curl/config
 while getopts c:q:h OPT
 do
     case $OPT in
-	w)  WRITE_OUT_FORMAT=$OPTARG ;;
 	c)  LOAD_COOKIE_PATH=$OPTARG ;;
         q)  FILENAME_QUEUE=$OPTARG ;;
         h)  usage_exit ;;
@@ -49,14 +47,11 @@ do
                 continue
         fi
 
-
-	TARGET_URL=`curl -I -Ls -o /dev/null -w %{url_effective} ${URL}`
-
 	if [ ${#TITLE} = 0 ] ; then
-		eval ${COMMAND} -b ${LOAD_COOKIE_PATH} -w ${WRITE_OUT_FORMAT} ${TARGET_URL} -O || continue
+		eval ${COMMAND} -b ${LOAD_COOKIE_PATH} ${URL} -O || continue
 		mark_finished "${LINE}" "${FILENAME_QUEUE}"
 	else
-		eval ${COMMAND} -b ${LOAD_COOKIE_PATH} -w ${WRITE_OUT_FORMAT} ${TARGET_URL} -o ${TITLE} || continue
+		eval ${COMMAND} -b ${LOAD_COOKIE_PATH} ${URL} -o ${TITLE} || continue
 		mark_finished "${LINE}" "${FILENAME_QUEUE}"
 	fi
 done
